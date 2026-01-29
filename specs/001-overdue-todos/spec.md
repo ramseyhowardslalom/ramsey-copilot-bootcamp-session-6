@@ -55,9 +55,7 @@ Todos that don't have a due date assigned will never be marked as overdue, maint
 
 ### Edge Cases
 
-- What happens when a todo has a due date of today? (Not overdue until tomorrow)
-- What happens when a user's system clock is incorrect? (System uses server time or local time consistently)
-- How does the system handle todos with due dates far in the past (e.g., years ago)?
+- What happens when a user's system clock is incorrect? (Server time used on initial load ensures baseline accuracy; client clock drift only affects UI updates between page loads)
 - What happens when a completed todo is marked as incomplete and its due date is in the past?
 
 ## Requirements *(mandatory)*
@@ -66,11 +64,14 @@ Todos that don't have a due date assigned will never be marked as overdue, maint
 
 - **FR-001**: System MUST visually distinguish overdue todos from non-overdue todos in the todo list display
 - **FR-002**: System MUST determine overdue status by comparing the todo's due date with the current date
-- **FR-003**: System MUST consider a todo overdue when its due date is before the current date (excluding today)
+- **FR-003**: System MUST consider a todo overdue when its due date is before the current date (excluding today - a due date of today is NOT overdue)
 - **FR-004**: System MUST NOT mark todos without due dates as overdue
 - **FR-005**: System MUST NOT display overdue styling on completed todos, regardless of their due date
 - **FR-006**: System MUST recalculate overdue status dynamically based on the current date each time the todo list is displayed
-- **FR-007**: Visual styling for overdue todos MUST be distinct and easily noticeable (e.g., different color, icon, or text treatment)
+- **FR-007**: Overdue visual styling MUST include both a text badge/label (e.g., "OVERDUE") and distinct border treatment to ensure visibility and accessibility
+- **FR-008**: System MUST use server-provided current date/time on initial page load and client-side date/time for subsequent UI updates (hybrid approach)
+- **FR-009**: System MUST display enhanced severity indicators for todos that are overdue by 30 days or more
+- **FR-010**: System SHOULD prompt users to archive todos with due dates 30 days or more in the past
 
 ### Key Entities
 
@@ -86,9 +87,20 @@ Todos that don't have a due date assigned will never be marked as overdue, maint
 - **SC-004**: Overdue status updates accurately when the date changes, verified through date-based testing across multiple days
 - **SC-005**: Users report improved task prioritization and reduced time spent manually checking due dates (qualitative feedback)
 
+## Clarifications
+
+### Session 2026-01-29
+
+- Q: What specific visual treatment should be used for overdue todos (color only, color + icon, text badge/label, border treatment, or combination)? → A: Combination of text badge/label and border treatment
+- Q: Should the system use server-side, client-side, or hybrid approach for determining current date/time? → A: Hybrid (server time on load, client time for UI updates)
+- Q: What happens when a todo has a due date of today - is it already overdue or not overdue until tomorrow? → A: Not overdue (today's due date gives user until end of day to complete)
+- Q: How should the system handle todos with due dates far in the past (e.g., years ago)? → A: Show different severity indicator for very old dates, and ask user if they want to archive
+- Q: What threshold defines "significantly overdue" or "very old" for severity indicators and archive prompts? → A: 30 days overdue
+
 ## Assumptions
 
-- The system has access to a reliable current date/time (server-side or client-side)
+- The backend provides current server date/time to the frontend on initial page load
+- The client-side JavaScript can access local date/time for UI updates between page loads
 - The existing todo data model already includes an optional due date field
 - Users understand that "overdue" means the due date has passed and the task is incomplete
 - Visual styling capabilities exist to differentiate todo items (colors, icons, text formatting)
